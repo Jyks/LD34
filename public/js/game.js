@@ -10,7 +10,9 @@ var player = {
 	y: 300,
 	g: 0,
 	down: true,
-	combo: 0
+	combo: 0,
+	combo_size: 1,
+	mode: true
 };
 
 var xoffset = 0;
@@ -19,8 +21,6 @@ var img_background, img_player;
 function init() {
 	img_background = document.getElementById("img_background");
 	img_player = document.getElementById("img_player");
-	
-	debug("Initialized.");
 }
 
 function render() {
@@ -28,10 +28,9 @@ function render() {
 	setFont("Arial", 16);
 	
 	// Background
-	for(var x = -width; x <= width; x += width) {
-		drawImage(img_background, x + shake.x + (xoffset % width), 0);
-	}
-
+	for(var x = -width; x <= width; x += width)
+		drawImage(img_background, x + shake.x + xoffset, 0);
+	
 	// Player
 	ctx.save();
 	ctx.scale(1, player.down ? 1 : -1);
@@ -46,26 +45,40 @@ function render() {
 		drawText(fps, 8, 8);
 	}
 	
+	// Combo
+	/*if(player.combo > 1 && player.combo_size > 1) {
+		setFont("Arial", 10 + player.combo_size * 4);
+		setColor("blue");
+		drawText(player.combo, textHeight() / 2, height - textHeight() * 1.5);
+	}*/
+	
 	// Canvas edges
 	drawRect(0, 0, width, height);
 }
 
 function update(delta) {
 	xoffset -= delta * .3;
+	xoffset %= width;
 	
-	player.g *= 1 + .002 * delta;
-	if(player.g > delta) player.g = delta;
-	else if(player.g < 4) player.g = 4;
+	//player.g *= 1 + .002 * delta;
+	//if(player.g > delta * (player.combo > 1 ? player.combo / 8 : 1)) player.g = delta * (player.combo > 1 ? player.combo / 8 : 1);
+	//else if(player.g < delta / 4) player.g = delta / 4;
 	
 	if(player.down && player.y < height - 17) {
-		player.y += player.g;
+		player.y += .3 * delta;
 	} else if(!player.down && player.y > 17) {
-		player.y -= player.g;
+		player.y -= .3 * delta;
 	} else {
-		player.g = 4;
 		player.y = player.down ? height - 17 : 17;
 		player.combo = 0;
 	}
+
+	/*if(player.combo > 1 && player.combo_size < player.combo) {
+		player.combo_size *= 1.05;
+	} else if(player.combo <= 1) {
+		player.combo_size *= .7;
+		if(player.combo_size < 1) player.combo_size = 1;
+	}*/
 
 	if(shake.time > 0) {
 		shake.x = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
@@ -83,47 +96,4 @@ function update(delta) {
 		delete keyboard.press[38];
 		delete keyboard.press[40];
 	}
-
-	/*if(!keyboard[39] && !keyboard[37]) {
-		if(player.speedx > 0) {
-			player.speedx -= .1 * delta;
-			if(player.speedx < 0) player.speedx = 0;
-		} else if(player.speedx < 0) {
-			player.speedx += .1 * delta;
-			if(player.speedx > 0) player.speedx = 0;
-		}
-	}
-
-	if(!keyboard[38] && !keyboard[40]) {
-		if(player.speedy > 0) {
-			player.speedy -= .1 * delta;
-			if(player.speedy < 0) player.speedy = 0;
-		} else if(player.speedy < 0) {
-			player.speedy += .1 * delta;
-			if(player.speedy > 0) player.speedy = 0;
-		}
-	}
-
-	if(keyboard[37]) player.speedx -= .05 * delta; // left
-	if(keyboard[38]) player.speedy -= .05 * delta; // up
-	if(keyboard[39]) player.speedx += .05 * delta; // right
-	if(keyboard[40]) player.speedy += .05 * delta; // down
-
-	if(player.speedx > .3 * delta) player.speedx = .3 * delta;
-	else if(player.speedx < -(.3 * delta)) player.speedx = -(.3 * delta);
-
-	if(player.speedy > .3 * delta) player.speedy = .3 * delta;
-	else if(player.speedy < -(.3 * delta)) player.speedy = -(.3 * delta);
-	
-	if(keyboard[32]) {
-		shake.time = delta * 2;
-		player.x += 3 * player.speedx;
-		player.y += 3 * player.speedy;
-	} else {
-		player.x += player.speedx;
-		player.y += player.speedy;
-		
-		cam.x -= player.speedx;
-		cam.y -= player.speedy;
-	}*/
 }

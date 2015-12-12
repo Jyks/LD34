@@ -3,7 +3,7 @@
 var canvas, ctx;
 
 var width = 800;
-var height = 600;
+var height = 480;
 var fps = 60;
 var debug_mode = true;
 
