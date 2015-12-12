@@ -12,6 +12,7 @@ var static_files = [
 	{get: "/input.js", give: "js/input.js"},
 	{get: "/random.js", give: "js/random.js"},
 	{get: "/util.js", give: "js/util.js"},
+	{get: "/map.js", give: "js/map.js"},
 	{get: "/favicon.ico", give: "favicon.ico"},
 	{get: "/floor.png", give: "images/floor.png"},
 	{get: "/wall.png", give: "images/wall.png"},

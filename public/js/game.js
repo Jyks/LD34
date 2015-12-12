@@ -51,6 +51,8 @@ var ai = {
 	],
 }
 
+var bullets = [];
+
 var img_floor, img_wall, img_player, img_btn_unpressed, img_btn_pressed;
 
 function init() {
@@ -67,8 +69,8 @@ function render() {
 	setFont("Arial", 16);
 	
 	// Floor
-	for(var x = -width; x <= width; x += 64) {
-		for(var y = -height; y <= height; y += 64) {
+	for(var x = -width; x <= width + 64; x += 64) {
+		for(var y = -height; y <= height + 64; y += 64) {
 			var draw_x = x + shake.x + (cam.x % 64), draw_y = y + shake.y + (cam.y % 64);
 			if(draw_x < width && draw_y < height && draw_x > -width && draw_y > -height)
 				drawImage(img_floor, draw_x, draw_y, 64, 64);
@@ -83,6 +85,10 @@ function render() {
 				button.y + shake.y + cam.y,
 				button.scale);
 		}
+	});
+
+	bullets.forEach(function(bullet) {
+		fillCircle(bullet.x, bullet.y, 6, 6);
 	});
 
 	// Enemies
@@ -120,7 +126,23 @@ function update(delta) {
 		else if(Math.abs(enemy.startx - enemy.x) > tox) enemy.x--;
 		else if(Math.abs(enemy.starty - enemy.y) < toy) enemy.y++;
 		else if(Math.abs(enemy.starty - enemy.y) > toy) enemy.y--;
-		else next();
+		else {
+			bullets[bullets.length] = {
+				x: enemy.x + 8,
+				y: enemy.y + 8,
+				d: 0, // direction
+				p: false // is player immune
+			};
+			
+			next();
+		}
+	});
+
+	bullets.forEach(function(bullet) {
+		if(bullet.d === 0) bullet.x += .2 * delta;
+		else if(bullet.d === 1) bullet.y += .2 * delta;
+		else if(bullet.d === 2) bullet.x -= .2 * delta;
+		else if(bullet.d === 3) bullet.y -= .2 * delta;
 	});
 	
 	btn.forEach(function(button) {
@@ -136,7 +158,7 @@ function update(delta) {
 			y1: player.y,
 			x2: button.x + 16,
 			y2: button.y + 16,
-			w1: 16,
+			w1: 48,
 			h1: 32,
 			w2: 48 - 32,
 			h2: 48 - 32
@@ -187,21 +209,14 @@ function update(delta) {
 	if(player.speedy > .3 * delta) player.speedy = .3 * delta;
 	else if(player.speedy < -(.3 * delta)) player.speedy = -(.3 * delta);
 	
-	player.x += player.speedx * player.scale;
-	player.y += player.speedy * player.scale;
+	player.x += player.speedx;
+	player.y += player.speedy;
 	
 	cam.x = 400 - player.x;
 	cam.y = 300 - player.y;
-	//cam.x -= player.speedx * player.scale;
-	//cam.y -= player.speedy * player.scale;
 	
-	if(keyboard[90]) {
-		// Get larger
-		player.scale *= 1.05;
-	} else if(keyboard[88]) {
-		// Get smaller
-		player.scale /= 1.05;
-	}
+	if(keyboard[90]) player.scale *= 1.05;
+	else if(keyboard[88]) player.scale /= 1.05;
 
 	if(keyboard.press[32]) {
 		var ok = false;
