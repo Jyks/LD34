@@ -17,6 +17,7 @@ var static_files = [
 	{get: "/player.png", give: "images/player.png"},
 	{get: "/btn_unpressed.png", give: "images/btn_unpressed.png"},
 	{get: "/btn_pressed.png", give: "images/btn_pressed.png"},
+	{get: "/enemy_16.png", give: "images/enemy_16.png"},
 ];
 
 static_files.forEach(function(file) {

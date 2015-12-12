@@ -26,8 +26,7 @@ var btn = [
 		pressed: false,
 		hide: false,
 		scale: 1
-	},
-	{
+	},{
 		x: -100,
 		y: -100,
 		pressed: false,
@@ -36,6 +35,22 @@ var btn = [
 	}
 ];
 
+var enemies = {
+	16: [
+		{startx: 200, starty: 300, x: 200, y: 300}
+	]
+};
+
+var ai = {
+	16: [
+		0,
+		0, 100,
+		100, 100,
+		100, 0,
+		0, 0
+	],
+}
+
 var img_background, img_player, img_btn_unpressed, img_btn_pressed;
 
 function init() {
@@ -43,8 +58,7 @@ function init() {
 	img_player = document.getElementById("img_player");
 	img_btn_unpressed = document.getElementById("img_btn_unpressed");
 	img_btn_pressed = document.getElementById("img_btn_pressed");
-
-	debug("Initialized.");
+	img_enemy_16 = document.getElementById("img_enemy_16");
 }
 
 function render() {
@@ -69,6 +83,11 @@ function render() {
 				button.scale);
 		}
 	});
+
+	// Enemies
+	enemies[16].forEach(function(enemy) {
+		drawImage(img_enemy_16, enemy.x + shake.x + cam.x, enemy.y + shake.y + cam.y);
+	});
 	
 	// Player
 	drawImageScaled(img_player, player.x + shake.x + cam.x, player.y + shake.y + cam.y, player.scale);
@@ -86,6 +105,23 @@ function render() {
 }
 
 function update(delta) {
+	// Update enemy locations
+	enemies[16].forEach(function(enemy) {
+		var tox = ai[16][ai[16][0]*2+1];
+		var toy = ai[16][ai[16][0]*2+2];
+		
+		var next = function() {
+			ai[16][0]++;
+			if(ai[16][0] >= ai[16].length / 2 - 1) ai[16][0] = 0;
+		};
+		
+		if(Math.abs(enemy.startx - enemy.x) < tox) enemy.x++;
+		else if(Math.abs(enemy.startx - enemy.x) > tox) enemy.x--;
+		else if(Math.abs(enemy.starty - enemy.y) < toy) enemy.y++;
+		else if(Math.abs(enemy.starty - enemy.y) > toy) enemy.y--;
+		else next();
+	});
+	
 	btn.forEach(function(button) {
 		// Hide button if pressed
 		if(button.hide && button.scale > .01) button.scale /= 1.15;

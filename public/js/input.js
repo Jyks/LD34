@@ -32,6 +32,7 @@ window.addEventListener("keydown", function(evt) {
 	keyboard[evt.keyCode] = true;
 	keyboard.press[evt.keyCode] = true;
 	debug("pressed " + evt.keyCode);
+	evt.preventDefault();
 }, false);
 
 window.addEventListener("keyup", function(evt) {
