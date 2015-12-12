@@ -46,9 +46,9 @@ function drawImage(img, x, y, w, h) {
 	else ctx.drawImage(img, x, y, w, h);
 }
 
-// Draws the image centered and scaled
-function drawImageScaled(img, x, y, scale) {
-	ctx.drawImage(img, x - (img.naturalWidth * scale) / 2, y - (img.naturalHeight * scale) / 2, scale * img.naturalWidth, scale * img.naturalHeight);
+function drawImageCentered(img, x, y, w, h) {
+	if(w === undefined || h === undefined) ctx.drawImage(img, x - img.naturalWidth / 2, y - img.naturalHeight / 2);
+	else ctx.drawImage(img, x, y, w, h);
 }
 
 function drawCircle(x, y, d) {

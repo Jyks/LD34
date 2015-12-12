@@ -1,10 +1,6 @@
-// This file catches input events and turns them into easy-to-use objects
+// This file catches input events and turns them into easy-to-use object
 
-var keyboard = {
-	press: [],
-	release: []
-};
-
+var keyboard = {press: [], release: []};
 var mouse = {
 	down: false,
 	x: -1,

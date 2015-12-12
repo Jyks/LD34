@@ -7,98 +7,37 @@ var shake = {
 };
 
 var player = {
-	x: 400,
 	y: 300,
-	speedx: 0,
-	speedy: 0,
-	scale: 1
+	g: 0,
+	down: true,
+	combo: 0
 };
 
-var cam = {
-	x: 0,
-	y: 0
-};
-
-var btn = [
-	{
-		x: 100,
-		y: 100,
-		pressed: false,
-		hide: false,
-		scale: 1
-	},{
-		x: -100,
-		y: -100,
-		pressed: false,
-		hide: false,
-		scale: 1
-	}
-];
-
-var enemies = {
-	16: [
-		{startx: 200, starty: 300, x: 200, y: 300}
-	]
-};
-
-var ai = {
-	16: [
-		0,
-		0, 100,
-		100, 100,
-		100, 0,
-		0, 0
-	],
-}
-
-var bullets = [];
-
-var img_floor, img_wall, img_player, img_btn_unpressed, img_btn_pressed;
+var xoffset = 0;
+var img_background, img_player;
 
 function init() {
-	img_floor = document.getElementById("img_floor");
-	img_wall = document.getElementById("img_wall");
+	img_background = document.getElementById("img_background");
 	img_player = document.getElementById("img_player");
-	img_btn_unpressed = document.getElementById("img_btn_unpressed");
-	img_btn_pressed = document.getElementById("img_btn_pressed");
-	img_enemy_16 = document.getElementById("img_enemy_16");
+	
+	debug("Initialized.");
 }
 
 function render() {
 	setColor("black");
 	setFont("Arial", 16);
 	
-	// Floor
-	for(var x = -width; x <= width + 64; x += 64) {
-		for(var y = -height; y <= height + 64; y += 64) {
-			var draw_x = x + shake.x + (cam.x % 64), draw_y = y + shake.y + (cam.y % 64);
-			if(draw_x < width && draw_y < height && draw_x > -width && draw_y > -height)
-				drawImage(img_floor, draw_x, draw_y, 64, 64);
-		}
+	// Background
+	for(var x = -width; x <= width; x += width) {
+		drawImage(img_background, x + shake.x + (xoffset % width), 0);
 	}
-	
-	// Buttons
-	btn.forEach(function(button) {
-		if(button.scale > .01) {
-			drawImageScaled(button.pressed ? img_btn_pressed : img_btn_unpressed,
-				button.x + shake.x + cam.x,
-				button.y + shake.y + cam.y,
-				button.scale);
-		}
-	});
 
-	bullets.forEach(function(bullet) {
-		fillCircle(bullet.x, bullet.y, 6, 6);
-	});
-
-	// Enemies
-	enemies[16].forEach(function(enemy) {
-		drawImage(img_enemy_16, enemy.x + shake.x + cam.x, enemy.y + shake.y + cam.y);
-	});
-	
 	// Player
-	drawImageScaled(img_player, player.x + shake.x + cam.x, player.y + shake.y + cam.y, player.scale);
-
+	ctx.save();
+	ctx.scale(1, player.down ? 1 : -1);
+	drawImageCentered(img_player, 260 + shake.x, (player.y + shake.y) * (player.down ? 1 : -1));
+	ctx.restore();
+	
 	// FPS
 	if(debug()) {
 		setColor("white");
@@ -112,73 +51,40 @@ function render() {
 }
 
 function update(delta) {
-	// Update enemy locations
-	enemies[16].forEach(function(enemy) {
-		var tox = ai[16][ai[16][0]*2+1];
-		var toy = ai[16][ai[16][0]*2+2];
-		
-		var next = function() {
-			ai[16][0]++;
-			if(ai[16][0] >= ai[16].length / 2 - 1) ai[16][0] = 0;
-		};
-		
-		if(Math.abs(enemy.startx - enemy.x) < tox) enemy.x++;
-		else if(Math.abs(enemy.startx - enemy.x) > tox) enemy.x--;
-		else if(Math.abs(enemy.starty - enemy.y) < toy) enemy.y++;
-		else if(Math.abs(enemy.starty - enemy.y) > toy) enemy.y--;
-		else {
-			bullets[bullets.length] = {
-				x: enemy.x + 8,
-				y: enemy.y + 8,
-				d: 0, // direction
-				p: false // is player immune
-			};
-			
-			next();
-		}
-	});
+	xoffset -= delta * .3;
+	
+	player.g *= 1 + .002 * delta;
+	if(player.g > delta) player.g = delta;
+	else if(player.g < 4) player.g = 4;
+	
+	if(player.down && player.y < height - 17) {
+		player.y += player.g;
+	} else if(!player.down && player.y > 17) {
+		player.y -= player.g;
+	} else {
+		player.g = 4;
+		player.y = player.down ? height - 17 : 17;
+		player.combo = 0;
+	}
 
-	bullets.forEach(function(bullet) {
-		if(bullet.d === 0) bullet.x += .2 * delta;
-		else if(bullet.d === 1) bullet.y += .2 * delta;
-		else if(bullet.d === 2) bullet.x -= .2 * delta;
-		else if(bullet.d === 3) bullet.y -= .2 * delta;
-	});
-	
-	btn.forEach(function(button) {
-		// Hide button if pressed
-		if(button.hide && button.scale > .01) button.scale /= 1.15;
-		else if(button.hide && button.scale < .01) button.scale = .01;
-		else if(!button.hide && button.scale < 1) button.scale *= 1.15;
-		else if(!button.hide && button.scale > 1) button.scale = 1;
-		
-		// Check for button presses
-		if(collision({
-			x1: player.x,
-			y1: player.y,
-			x2: button.x + 16,
-			y2: button.y + 16,
-			w1: 48,
-			h1: 32,
-			w2: 48 - 32,
-			h2: 48 - 32
-		}) && !button.pressed && !button.hide) {
-			button.pressed = true;
-			button.hide = true;
-			shake.time = 500;
-		}
-	});
-	
 	if(shake.time > 0) {
 		shake.x = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
 		shake.y = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
 
 		shake.time -= delta;
 	} else if(shake.x !== 0 || shake.y !== 0) {
-		shake.x = shake.y = 0;
+		shake.x = 0;
+		shake.y = 0;
 	}
 	
-	if(!keyboard[39] && !keyboard[37]) {
+	if(keyboard.press[38] || keyboard.press[40]) {
+		player.down = !player.down;
+		player.combo++;
+		delete keyboard.press[38];
+		delete keyboard.press[40];
+	}
+
+	/*if(!keyboard[39] && !keyboard[37]) {
 		if(player.speedx > 0) {
 			player.speedx -= .1 * delta;
 			if(player.speedx < 0) player.speedx = 0;
@@ -209,26 +115,15 @@ function update(delta) {
 	if(player.speedy > .3 * delta) player.speedy = .3 * delta;
 	else if(player.speedy < -(.3 * delta)) player.speedy = -(.3 * delta);
 	
-	player.x += player.speedx;
-	player.y += player.speedy;
-	
-	cam.x = 400 - player.x;
-	cam.y = 300 - player.y;
-	
-	if(keyboard[90]) player.scale *= 1.05;
-	else if(keyboard[88]) player.scale /= 1.05;
-
-	if(keyboard.press[32]) {
-		var ok = false;
-
-		btn.forEach(function(button) {
-			if(button.hide && !ok) {
-				button.hide = false;
-				button.pressed = false;
-				ok = true;
-			}
-		});
+	if(keyboard[32]) {
+		shake.time = delta * 2;
+		player.x += 3 * player.speedx;
+		player.y += 3 * player.speedy;
+	} else {
+		player.x += player.speedx;
+		player.y += player.speedy;
 		
-		delete keyboard.press[32];
-	}
+		cam.x -= player.speedx;
+		cam.y -= player.speedy;
+	}*/
 }

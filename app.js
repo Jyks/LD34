@@ -11,15 +11,9 @@ var static_files = [
 	{get: "/graphics.js", give: "js/graphics.js"},
 	{get: "/input.js", give: "js/input.js"},
 	{get: "/random.js", give: "js/random.js"},
-	{get: "/util.js", give: "js/util.js"},
-	{get: "/map.js", give: "js/map.js"},
 	{get: "/favicon.ico", give: "favicon.ico"},
-	{get: "/floor.png", give: "images/floor.png"},
-	{get: "/wall.png", give: "images/wall.png"},
-	{get: "/player.png", give: "images/player.png"},
-	{get: "/btn_unpressed.png", give: "images/btn_unpressed.png"},
-	{get: "/btn_pressed.png", give: "images/btn_pressed.png"},
-	{get: "/enemy_16.png", give: "images/enemy_16.png"},
+	{get: "/background.png", give: "images/background.png"},
+	{get: "/player.gif", give: "images/player.gif"}
 ];
 
 static_files.forEach(function(file) {
