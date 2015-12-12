@@ -51,10 +51,11 @@ var ai = {
 	],
 }
 
-var img_background, img_player, img_btn_unpressed, img_btn_pressed;
+var img_floor, img_wall, img_player, img_btn_unpressed, img_btn_pressed;
 
 function init() {
-	img_background = document.getElementById("img_background");
+	img_floor = document.getElementById("img_floor");
+	img_wall = document.getElementById("img_wall");
 	img_player = document.getElementById("img_player");
 	img_btn_unpressed = document.getElementById("img_btn_unpressed");
 	img_btn_pressed = document.getElementById("img_btn_pressed");
@@ -65,12 +66,12 @@ function render() {
 	setColor("black");
 	setFont("Arial", 16);
 	
-	// Background
-	for(var x = -width; x <= width; x += width) {
-		for(var y = -height; y <= height; y += height) {
-			var draw_x = x + shake.x + (cam.x % width), draw_y = y + shake.y + (cam.y % height);
+	// Floor
+	for(var x = -width; x <= width; x += 64) {
+		for(var y = -height; y <= height; y += 64) {
+			var draw_x = x + shake.x + (cam.x % 64), draw_y = y + shake.y + (cam.y % 64);
 			if(draw_x < width && draw_y < height && draw_x > -width && draw_y > -height)
-				drawImage(img_background, draw_x, draw_y);
+				drawImage(img_floor, draw_x, draw_y, 64, 64);
 		}
 	}
 	
@@ -135,7 +136,7 @@ function update(delta) {
 			y1: player.y,
 			x2: button.x + 16,
 			y2: button.y + 16,
-			w1: 32,
+			w1: 16,
 			h1: 32,
 			w2: 48 - 32,
 			h2: 48 - 32
