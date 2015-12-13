@@ -6,21 +6,13 @@ var shake = {
 	y: 0
 };
 
-var player = {
-	y: 300,
-	g: 0,
-	down: true,
-	combo: 0,
-	combo_size: 1,
-	mode: true
-};
-
-var xoffset = 0;
-var img_background, img_player;
+var xoffset = 0, y = 400, g = 0, pull = 0, momentum = 0;
+var img_background, img_player, img_block;
 
 function init() {
 	img_background = document.getElementById("img_background");
 	img_player = document.getElementById("img_player");
+	img_block = document.getElementById("img_block");
 }
 
 function render() {
@@ -28,14 +20,11 @@ function render() {
 	setFont("Arial", 16);
 	
 	// Background
-	for(var x = -width; x <= width; x += width)
-		drawImage(img_background, x + shake.x + xoffset, 0);
+	for(var i = -width; i <= width; i += width)
+		drawImage(img_background, i + shake.x + (xoffset % width), 0);
 	
 	// Player
-	ctx.save();
-	ctx.scale(1, player.down ? 1 : -1);
-	drawImageCentered(img_player, 260 + shake.x, (player.y + shake.y) * (player.down ? 1 : -1));
-	ctx.restore();
+	drawImageCentered(img_player, 260 + shake.x - pull, y + shake.y);
 	
 	// FPS
 	if(debug()) {
@@ -45,55 +34,48 @@ function render() {
 		drawText(fps, 8, 8);
 	}
 	
-	// Combo
-	/*if(player.combo > 1 && player.combo_size > 1) {
-		setFont("Arial", 10 + player.combo_size * 4);
-		setColor("blue");
-		drawText(player.combo, textHeight() / 2, height - textHeight() * 1.5);
-	}*/
-	
 	// Canvas edges
 	drawRect(0, 0, width, height);
 }
 
 function update(delta) {
 	xoffset -= delta * .3;
-	xoffset %= width;
 	
-	//player.g *= 1 + .002 * delta;
-	//if(player.g > delta * (player.combo > 1 ? player.combo / 8 : 1)) player.g = delta * (player.combo > 1 ? player.combo / 8 : 1);
-	//else if(player.g < delta / 4) player.g = delta / 4;
-	
-	if(player.down && player.y < height - 17) {
-		player.y += .3 * delta;
-	} else if(!player.down && player.y > 17) {
-		player.y -= .3 * delta;
-	} else {
-		player.y = player.down ? height - 17 : 17;
-		player.combo = 0;
-	}
-
-	/*if(player.combo > 1 && player.combo_size < player.combo) {
-		player.combo_size *= 1.05;
-	} else if(player.combo <= 1) {
-		player.combo_size *= .7;
-		if(player.combo_size < 1) player.combo_size = 1;
-	}*/
-
-	if(shake.time > 0) {
-		shake.x = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
-		shake.y = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
-
-		shake.time -= delta;
-	} else if(shake.x !== 0 || shake.y !== 0) {
-		shake.x = 0;
-		shake.y = 0;
-	}
-	
-	if(keyboard.press[38] || keyboard.press[40]) {
-		player.down = !player.down;
-		player.combo++;
-		delete keyboard.press[38];
-		delete keyboard.press[40];
-	}
+	if(!keyboard[37]) {
+		if(pull == 0) {
+			y += g;
+			
+			if(y < 17) {
+				y = 17;
+				if(g < 0) g = 0;
+			} else if(y < height - 17) g += 1;
+			else g = 0;
+			
+			if(y > height - 17) y = height - 17;
+			
+			if(shake.time > 0) {
+				shake.x = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
+				shake.y = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
+				
+				shake.time -= delta;
+			} else if(shake.x !== 0 || shake.y !== 0) {
+				shake.x = 0;
+				shake.y = 0;
+			}
+			
+			if(keyboard.press[38]) {
+				if(g >= 0) g = -20;
+				//y -= 100;
+				delete keyboard.press[38];
+			}
+		} else if(pull > 0) {
+			momentum += .1 * delta;
+			pull -= momentum;
+			
+			if(pull < 0) {
+				pull = 0;
+				g = 0;
+			}
+		}
+	} else pull += .075 * delta;
 }

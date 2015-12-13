@@ -13,7 +13,8 @@ var static_files = [
 	{get: "/random.js", give: "js/random.js"},
 	{get: "/favicon.ico", give: "favicon.ico"},
 	{get: "/background.png", give: "images/background.png"},
-	{get: "/player.gif", give: "images/player.gif"}
+	{get: "/player.gif", give: "images/player.gif"},
+	{get: "/block.png", give: "images/block.png"},
 ];
 
 static_files.forEach(function(file) {
