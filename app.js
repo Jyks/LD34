@@ -15,6 +15,8 @@ var static_files = [
 	{get: "/background.png", give: "images/background.png"},
 	{get: "/player.gif", give: "images/player.gif"},
 	{get: "/block.png", give: "images/block.png"},
+	{get: "/sky.png", give: "images/sky.png"},
+	{get: "/land.png", give: "images/land.png"},
 ];
 
 static_files.forEach(function(file) {

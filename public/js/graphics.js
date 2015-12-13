@@ -62,3 +62,9 @@ function fillCircle(x, y, d) {
 	ctx.arc(x + d / 2, y + d / 2, d / 2, 0, 2 * Math.PI);
 	ctx.fill();
 }
+
+function fillCircleCentered(x, y, d) {
+	ctx.beginPath();
+	ctx.arc(x, y, d / 2, 0, 2 * Math.PI);
+	ctx.fill();
+}
