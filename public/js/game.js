@@ -9,7 +9,7 @@ var shake = {
 var bullets = [];
 var enemies = [[],[]];
 
-var xoffset = 0, y = 400, g = 0, pull = 0, origpull = 0, momentum = 0, lastenemy = 64, time = 0;
+var xoffset = 0, y = 400, g = 0, pull = 0, origpull = 0, momentum = 0, lastenemy = 64, time = 0, hp = 100;
 var img_background, img_player, img_enemy1, img_enemy2;
 
 function bullet(bx, by, bs, bd) {
@@ -70,28 +70,35 @@ function render() {
 		setColor("red");
 		drawText(fps, 8, 8);
 	}
-
-	// Floor
-	setColor("black");
-	fillRect(0, height - 4, width, 4);
 	
 	// Canvas edges
 	drawRect(0, 0, width, height);
+
+	// Hp
+	setColor("red");
+	fillRect(0, 0, width * (hp / 100), 4);
+	fillRect(width * (hp / 100) - textWidth(hp + "%"), 0, textWidth(hp + "%"), textHeight() + 2);
+	setColor("white");
+	drawText(hp + "%", width * (hp / 100) - textWidth(hp + "%"), 0);
+	
+	// Floor
+	setColor("black");
+	fillRect(0, height - 4, width, 4);
 }
 
 function update(delta) {
 	time += delta / 16;
 	xoffset -= (1 + time / 10000) * delta * .025;
 	
-	if((lastenemy > 64 && randomInt(72) === 8) || lastenemy > 256) {
+	if((lastenemy > 64 && randomInt(96) === 8) || lastenemy > 128) {
 		for(var i = 0; i < 8; i++) {
 			if(randomInt(16) === 2) {
 				if(randomInt(2) === 1) {
 					// Type 1
-					enemies[0][enemies[0].length] = {x: width - xoffset, y: 32 + i * (height / 8), scale: 1};
+					enemies[0][enemies[0].length] = {x: width - xoffset + img_enemy1.naturalWidth, y: 32 + i * (height / 8), scale: 1};
 				} else {
 					// Type 2
-					enemies[1][enemies[1].length] = {x: width - xoffset, y: 32 + i * (height / 8), scale: 1};
+					enemies[1][enemies[1].length] = {x: width - xoffset + img_enemy2.naturalWidth, y: 32 + i * (height / 8), scale: 1};
 				}
 			}
 		}
@@ -108,14 +115,18 @@ function update(delta) {
 		shake.y = 0;
 	}
 	
+	for(var i = 0; i < enemies[0].length; i++) {
+		if(enemies[0][i] !== undefined && enemies[0][i].x + xoffset < 0) {
+			hp -= 5;
+			delete enemies[0][i];
+		}
+	}
+	
 	for(var i = 0; i < bullets.length; i++) {
 		if(bullets[i] === undefined) continue;
 
 		bullets[i].x += .025 * bullets[i].s * delta;
-		if(xoffset + bullet.x > width) {
-			debug((xoffset + bullet.x) + " greater than " + width);
-			delete bullets[i];
-		}
+		if(xoffset + bullet.x > width) delete bullets[i];
 		
 		for(var j = 0; j < enemies[1].length; j++) {
 			if(enemies[1][j] !== undefined
@@ -136,8 +147,8 @@ function update(delta) {
 			&& enemies[0][j].y - img_enemy1.naturalHeight / 2 - bullets[i].d / 2 < bullets[i].y
 			&& enemies[0][j].x + img_enemy1.naturalWidth / 2 + bullets[i].d / 2 > bullets[i].x
 			&& enemies[0][j].y + img_enemy1.naturalHeight / 2 + bullets[i].d / 2 > bullets[i].y) {
-				enemies[0][j].scale /= 1 + bullets[i].d / 6;
-				if(enemies[0][j].scale <= .2) delete enemies[0][j];
+				enemies[0][j].scale /= 1 + bullets[i].d / 5;
+				if(enemies[0][j].scale <= .25) delete enemies[0][j];
 				delete bullets[i];
 			}
 		}
@@ -150,8 +161,10 @@ function update(delta) {
 			if(y < 17) {
 				y = 17;
 				if(g < 0) g = 0;
-			} else if(y < height - img_player.naturalHeight / 2 - 4) g += 1;
+			} else if(y < height - img_player.naturalHeight / 2 - 4) g += .5;
 			else g = 0;
+
+			if(g > 10) g = 10;
 			
 			if(y > height - img_player.naturalHeight / 2 - 4) y = height - img_player.naturalHeight / 2 - 4;
 			
@@ -166,7 +179,7 @@ function update(delta) {
 			}
 			
 			if(keyboard.press[38]) {
-				if(g >= 0) g = -20;
+				if(g >= 0) g = -14;
 				delete keyboard.press[38];
 			}
 		} else if(pull > 0) {
