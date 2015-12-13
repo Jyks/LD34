@@ -21,10 +21,15 @@ function render() {
 	
 	// Background
 	for(var i = -width; i <= width; i += width)
-		drawImage(img_background, i + shake.x + (xoffset % width), 0);
+		drawImage(img_background, i + shake.x + (xoffset % width), shake.y - 10);
 	
 	// Player
-	drawImageCentered(img_player, 260 + shake.x - pull, y + shake.y);
+	if(pull === 0) drawImageCentered(img_player, 260 + shake.x, y + shake.y);
+	else drawImage(img_player,
+			260 + shake.x - pull - img_player.naturalWidth / 2,
+			y + shake.y - img_player.naturalHeight / 2,
+			img_player.naturalWidth + pull,
+			img_player.naturalHeight);
 	
 	// FPS
 	if(debug()) {
@@ -34,12 +39,25 @@ function render() {
 		drawText(fps, 8, 8);
 	}
 	
+	// Floor
+	setColor("black");
+	fillRect(0, height - 4, width, 4);
+	
 	// Canvas edges
 	drawRect(0, 0, width, height);
 }
 
 function update(delta) {
 	xoffset -= delta * .3;
+	
+	if(shake.time > 0) {
+		shake.x = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
+		shake.y = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
+		shake.time -= delta;
+	} else if(shake.x !== 0 || shake.y !== 0) {
+		shake.x = 0;
+		shake.y = 0;
+	}
 	
 	if(!keyboard[37]) {
 		if(pull == 0) {
@@ -48,10 +66,10 @@ function update(delta) {
 			if(y < 17) {
 				y = 17;
 				if(g < 0) g = 0;
-			} else if(y < height - 17) g += 1;
+			} else if(y < height - img_player.naturalHeight / 2 - 4) g += 1;
 			else g = 0;
 			
-			if(y > height - 17) y = height - 17;
+			if(y > height - img_player.naturalHeight / 2 - 4) y = height - img_player.naturalHeight / 2 - 4;
 			
 			if(shake.time > 0) {
 				shake.x = choose([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]);
@@ -65,7 +83,6 @@ function update(delta) {
 			
 			if(keyboard.press[38]) {
 				if(g >= 0) g = -20;
-				//y -= 100;
 				delete keyboard.press[38];
 			}
 		} else if(pull > 0) {
@@ -77,5 +94,8 @@ function update(delta) {
 				g = 0;
 			}
 		}
-	} else pull += .075 * delta;
+	} else {
+		shake.time = 10;
+		pull += .075 * delta;
+	}
 }

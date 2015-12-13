@@ -48,7 +48,7 @@ function drawImage(img, x, y, w, h) {
 
 function drawImageCentered(img, x, y, w, h) {
 	if(w === undefined || h === undefined) ctx.drawImage(img, x - img.naturalWidth / 2, y - img.naturalHeight / 2);
-	else ctx.drawImage(img, x, y, w, h);
+	else ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
 }
 
 function drawCircle(x, y, d) {
